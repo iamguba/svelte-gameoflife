@@ -5,18 +5,10 @@
     export let grid: BoardStore;
 </script>
 
-<style>
-    div {
-        display: flex;
-        flex-wrap: wrap;
-        width: calc(1em * var(--cols))
-    }
-</style>
-
-<div style="--cols: {grid.colsCount()}">
-{#each $grid as rowCells, row}
-    {#each rowCells as isAlive, column}
-        <Cell {isAlive} on:click={() => grid.toggle(row, column)}/>
+<svg width={grid.colsCount() * 6} height={grid.rowsCount() * 6}>
+    {#each $grid as rowCells, row}
+        {#each rowCells as isAlive, column}
+            <Cell {isAlive} {row} {column} on:click={() => grid.toggle(row, column)}/>
+        {/each}
     {/each}
-{/each}
-</div>
+</svg>

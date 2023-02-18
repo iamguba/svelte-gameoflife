@@ -2,4 +2,4 @@
     import Game from "../components/Game.svelte";
 </script>
 
-<Game rows={40} cols={75}/>
+<Game rows={100} cols={230}/>

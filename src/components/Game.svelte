@@ -19,7 +19,7 @@
             return;
         }
 
-        interval = setInterval(grid.nextGen, 100);
+        interval = setInterval(grid.nextGen, 30);
     }
 </script>
 
