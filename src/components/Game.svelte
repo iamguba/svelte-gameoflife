@@ -1,5 +1,6 @@
 <script>
     import Board from "./Board.svelte";
+    import GameButton from "./GameButton.svelte";
     import { createBoard } from '../stores/Board';
 
     export let rows;
@@ -19,12 +20,13 @@
             return;
         }
 
-        interval = setInterval(grid.nextGen, 30);
+        interval = setInterval(grid.nextGen, 300);
     }
 </script>
 
 <Board {grid}/>
-<button on:click={handlePlayPause}>{interval ? 'Pause' : 'Play'}</button>
-<button on:click={grid.nextGen}>Next Step</button>
-<button on:click={grid.reset}>Reset</button>
-<button on:click={grid.randomSeed}>Random</button>
+
+<GameButton title={interval ? 'Pause' : 'Play'} on:click={handlePlayPause}/>
+<GameButton title="Next Step" on:click={grid.nextGen}/>
+<GameButton title="Reset" on:click={grid.reset}/>
+<GameButton title="Random" on:click={grid.randomSeed}/>

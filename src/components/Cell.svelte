@@ -6,10 +6,10 @@
 
 <style>
     rect {
-        fill: #090909;
+        fill: #101010;
         stroke: black;
         stroke-width: 1px;
-        transition: fill 300ms linear;
+        transition: fill 200ms linear;
     }
 
     rect.alive {
