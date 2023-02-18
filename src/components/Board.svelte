@@ -5,7 +5,15 @@
     export let grid: BoardStore;
 </script>
 
-<svg width={grid.colsCount() * 6} height={grid.rowsCount() * 6}>
+<style>
+    svg {
+        display: flex;
+        margin: auto;
+        padding-bottom: 2em;
+    }
+</style>
+
+<svg width={grid.colsCount() * 8} height={grid.rowsCount() * 8}>
     {#each $grid as rowCells, row}
         {#each rowCells as isAlive, column}
             <Cell {isAlive} {row} {column} on:click={() => grid.toggle(row, column)}/>

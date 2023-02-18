@@ -2,4 +2,14 @@
     import Game from "../components/Game.svelte";
 </script>
 
-<Game rows={100} cols={230}/>
+<style>
+    main {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 2em;
+    }
+</style>
+
+<main>
+    <Game rows={70} cols={140}/>
+</main>

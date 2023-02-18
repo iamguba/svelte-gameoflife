@@ -9,20 +9,19 @@
         fill: #101010;
         stroke: black;
         stroke-width: 1px;
-        transition: fill 200ms linear;
     }
 
     rect.alive {
-        fill: #4a32e4;
+        fill: #31bf4d;
     }
 </style>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <rect
     class:alive={isAlive}
-    width="6"
-    height="6"
-    x={column * 6}
-    y={row * 6}
+    width="8"
+    height="8"
+    x={column * 8}
+    y={row * 8}
     on:click>
 </rect>

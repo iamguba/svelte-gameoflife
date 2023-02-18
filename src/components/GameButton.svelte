@@ -6,10 +6,21 @@
 <style>
     button {
         border: 0;
-        color: whitesmoke;
-        font-size: 1.6em;
+        color: #cacaca;
         background-color: black;
-        min-width: 8em;
+        font-size: 1.4em;
+        min-width: 6em;
+        cursor: pointer;
+        text-transform: lowercase;
+    }
+
+    button:hover {
+        color: whitesmoke;
+    }
+
+    button:disabled {
+        cursor: default;
+        color: #8f8f8f;
     }
 </style>
 
