@@ -16,6 +16,9 @@ export type BoardStore = {
     nextGen: () => void,
 };
 
+type ExportColumn = Array<number>;
+type ExportRow = [number, ExportColumn];
+
 export const DEAD = false;
 export const ALIVE = true;
 
@@ -58,10 +61,10 @@ export function createBoard(rows: number, cols: number): BoardStore {
 }
 
 export function exportCells(grid: BoardGrid): string {
-    const rows: Array<Array<number | Array<number>>> = [];
+    const rows: Array<ExportRow> = [];
 
     grid.forEach((rowCells, row) => {
-        const columns: Array<number> = [];
+        const columns: ExportColumn = [];
 
         rowCells.forEach((cell, column) => {
             if (cell === ALIVE) {
