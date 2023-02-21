@@ -77,7 +77,6 @@
             })
             .finally(() => (<HTMLInputElement>importInput).value = '')
     }
-    
 </script>
 
 <style>
