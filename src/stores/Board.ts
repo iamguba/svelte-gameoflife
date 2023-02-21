@@ -1,22 +1,81 @@
-import { writable, derived, type Writable, type Readable } from 'svelte/store';
+import { writable, type Writable } from 'svelte/store';
 
-type BoardGrid = Array<Array<boolean>>;
+export type BoardGrid = Array<Array<boolean>>;
 
-export type BoardStore = {
-    subscribe: Writable<BoardGrid>['subscribe'],
-    rowsCount: () => number,
-    colsCount: () => number,
-    aliveCount: Readable<number>,
-    stepsCount: Readable<number>,
-    toggle: (row: number, column: number) => void,
-    importFrom: (importData: string) => void,
-    reset: () => void,
-    nextGen: () => void,
-    randomSeed: () => void
+export type Board = {
+    grid: BoardGrid,
+    steps: number
 };
 
-const DEAD = false;
-const ALIVE = true;
+export type BoardStore = {
+    subscribe: Writable<Board>['subscribe'],
+    toggle: (row: number, column: number) => void,
+    importFrom: (importData: string) => void,
+    randomSeed: () => void,
+    reset: () => void,
+    nextGen: () => void,
+};
+
+export const DEAD = false;
+export const ALIVE = true;
+
+export function createBoard(rows: number, cols: number): BoardStore {
+    const { subscribe, set, update } = writable({
+        grid: getEmptyGrid(rows, cols),
+        steps: 0
+    });
+
+    const toggle = (row: number, column: number) => update((board) => {
+        board.grid[row][column] = !board.grid[row][column];
+        return board;
+    });
+
+    const reset = () => set({
+        grid: getEmptyGrid(rows, cols),
+        steps: 0
+    });
+
+    const nextGen = () => update((board) => getNextGen(board));
+
+    const randomSeed = () => set({
+        grid: getRandomSeedGrid(rows, cols),
+        steps: 0
+    });
+
+    const importFrom = (importData: string) => set({
+        grid: getImportedGrid(rows, cols, importData),
+        steps: 0
+    });
+
+    return {
+        subscribe,
+        toggle,
+        reset,
+        randomSeed,
+        nextGen,
+        importFrom
+    };
+}
+
+export function exportCells(grid: BoardGrid): string {
+    const rows: Array<Array<number | Array<number>>> = [];
+
+    grid.forEach((rowCells, row) => {
+        const columns: Array<number> = [];
+
+        rowCells.forEach((cell, column) => {
+            if (cell === ALIVE) {
+                columns.push(column);
+            }
+        });
+
+        if (columns.length) {
+            rows.push([row, columns]);
+        }
+    });
+
+    return JSON.stringify(rows);
+}
 
 function getEmptyGrid(rows: number, cols: number): BoardGrid {
     return (new Array(rows).fill(null)).map(() => (new Array(cols)).fill(DEAD));
@@ -68,16 +127,6 @@ function getGridSize(grid: BoardGrid): [number, number] {
     return [grid.length, grid[0].length];
 }
 
-function countAlive(grid: BoardGrid): number {
-    let count = 0;
-
-    grid.forEach((rowCells) => {
-        rowCells.forEach((cell) => count += (cell === ALIVE ? 1 : 0));
-    });
-
-    return count;
-}
-
 function countAliveNeighbours(grid: BoardGrid, row: number, column: number): number {
     const [rowsCount, colsCount] = getGridSize(grid);
 
@@ -97,7 +146,8 @@ function countAliveNeighbours(grid: BoardGrid, row: number, column: number): num
         .length;
 }
 
-function getNextGen(grid: BoardGrid): BoardGrid {
+function getNextGen(board: Board): Board {
+    const { grid, steps } = board;
     const [rowsCount, colsCount] = getGridSize(grid);
 
     const newGrid = getEmptyGrid(rowsCount, colsCount);
@@ -123,76 +173,5 @@ function getNextGen(grid: BoardGrid): BoardGrid {
         });
     });
 
-    return newGrid;
-}
-
-export function createBoard(rows: number, cols: number): BoardStore {
-    const gridWritable = writable(getEmptyGrid(rows, cols));
-    const { subscribe, set, update } = gridWritable;
-
-    const aliveCount = derived(gridWritable, (grid) => countAlive(grid));
-
-    const stepsCount = writable(0);
-    const { update: updateSteps, set: setSteps } = stepsCount;
-
-    const rowsCount = () => rows;
-    const colsCount = () => cols;
-
-    const toggle = (row: number, column: number) => update((grid) => {
-        grid[row][column] = !grid[row][column];
-        return grid;
-    });
-
-    const reset = () => {
-        set(getEmptyGrid(rows, cols));
-        setSteps(0);
-    };
-
-    const nextGen = () => {
-        update((grid) => getNextGen(grid));
-        updateSteps((steps) => steps + 1);
-    }
-
-    const randomSeed = () => {
-        set(getRandomSeedGrid(rows, cols));
-        setSteps(0);
-    };
-
-    const importFrom = (importData: string) => {
-        set(getImportedGrid(rows, cols, importData));
-        setSteps(0);
-    };
-
-    return {
-        subscribe,
-        toggle,
-        reset,
-        randomSeed,
-        nextGen,
-        rowsCount,
-        colsCount,
-        aliveCount,
-        stepsCount: derived(stepsCount, (steps) => steps),
-        importFrom
-    };
-}
-
-export function exportCells(grid: BoardGrid): string {
-    const rows: Array<Array<number | Array<number>>> = [];
-
-    grid.forEach((rowCells, row) => {
-        const columns: Array<number> = [];
-
-        rowCells.forEach((cell, column) => {
-            if (cell === ALIVE) {
-                columns.push(column);
-            }
-        });
-
-        if (columns.length) {
-            rows.push([row, columns]);
-        }
-    });
-
-    return JSON.stringify(rows);
+    return { grid: newGrid, steps: steps + 1 };
 }

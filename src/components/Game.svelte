@@ -1,52 +1,42 @@
 <script lang="ts">
     import Board from "./Board.svelte";
     import GameButton from "./GameButton.svelte";
+
     import { createBoard, exportCells } from '../stores/Board';
-    import gameOfLife from '../examples/gameoflife.json';
+    import { createAliveCount } from '../stores/AliveCount';
+    import { createAlivePercentsCount } from '../stores/AlivePercentsCount';
+    import { createPlayer } from '../stores/Player';
+
     import { onMount, onDestroy } from 'svelte';
 
-    export let rows;
-    export let cols;
+    import gameOfLife from '../examples/gameoflife.json';
 
-    const grid = createBoard(rows, cols);
+    export let rows: number;
+    export let cols: number;
 
-    let interval: NodeJS.Timeout | null = null;
-
-    let aliveCount = 0;
-    let stepsCount = 0;
+    const board = createBoard(rows, cols);
+    const aliveCount = createAliveCount(board);
+    const alivePercentsCount = createAlivePercentsCount(board, aliveCount);
+    const boardPlayer = createPlayer(board);
 
     let importFiles: FileList | null = null;
     let importInput: HTMLInputElement | null = null;
 
     onMount(() => {
-        grid.importFrom(JSON.stringify(gameOfLife));
+        board.importFrom(JSON.stringify(gameOfLife));
     });
 
     onDestroy(() => {
-        interval && clearInterval(interval);
-    });
-
-    grid.aliveCount.subscribe((count) => {
-        aliveCount = count;
-    });
-
-    grid.stepsCount.subscribe((steps) => {
-        stepsCount = steps;
+        boardPlayer.pause();
     });
 
     function handlePlayPause() {
-        if (interval) {
-            clearInterval(interval);
-            interval = null;
-            return;
-        }
-
-        interval = setInterval(grid.nextGen, 100);
+        isPlaying ? boardPlayer.pause() : boardPlayer.play();
     }
 
     function handleExport() {
         const link = document.createElement('a');
-        const content = exportCells($grid);
+        const content = exportCells($board.grid);
         const file = new Blob([content], { type: 'application/json' });
 
         link.href = URL.createObjectURL(file);
@@ -73,14 +63,14 @@
         });
     }
 
-    $: isPlaying = !!interval;
-    $: isEmpty = !aliveCount;
-    $: isNonExported = isPlaying || isEmpty;
+    $: isPlaying = $boardPlayer;
+    $: isEmpty = $aliveCount === 0;
+    $: isNotReadyForExport = isPlaying || isEmpty;
     $: playPauseTitle = isPlaying ? 'Pause' : 'Play';
 
     $: if (importFiles && importFiles[0]) {
         readImport(importFiles[0])
-            .then((importData) => grid.importFrom(importData))
+            .then((importData) => board.importFrom(importData))
             .catch((e) => {
                 const errorMessage = (<Error>e).message;
                 alert(`Error importing file: "${errorMessage}"`);
@@ -120,14 +110,14 @@
     }
 </style>
 
-<Board {grid}/>
+<Board {...{board, rows, cols, alivePercentsCount}}/>
 
 <section>
     <GameButton title={playPauseTitle} disabled={isEmpty} on:click={handlePlayPause}/>
-    <GameButton title="Next Step" disabled={isNonExported} on:click={grid.nextGen}/>
-    <GameButton title="Reset" disabled={isNonExported} on:click={grid.reset}/>
-    <GameButton title="Random" disabled={isPlaying} on:click={grid.randomSeed}/>
-    <GameButton title="Export" disabled={isNonExported} on:click={handleExport}/>
+    <GameButton title="Next Step" disabled={isNotReadyForExport} on:click={board.nextGen}/>
+    <GameButton title="Reset" disabled={isNotReadyForExport} on:click={board.reset}/>
+    <GameButton title="Random" disabled={isPlaying} on:click={board.randomSeed}/>
+    <GameButton title="Export" disabled={isNotReadyForExport} on:click={handleExport}/>
     <GameButton title="Import" disabled={isPlaying} on:click={handleImportClick}/>
 </section>
 
@@ -141,6 +131,7 @@
 <div class="break"></div>
 
 <aside>
-    <p>Cells alive: {aliveCount}</p>
-    <p>Steps: {stepsCount}</p>
+    <p>Cells alive: {$aliveCount}</p>
+    <p>Percents alive: {$alivePercentsCount}</p>
+    <p>Steps: {$board.steps}</p>
 </aside>

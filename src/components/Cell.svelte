@@ -1,7 +1,7 @@
-<script>
-    export let isAlive = false;
-    export let row = 0;
-    export let column = 0;
+<script lang="ts">
+    export let isAlive: boolean;
+    export let row: number;
+    export let column: number;
 </script>
 
 <style>
@@ -9,10 +9,11 @@
         fill: #101010;
         stroke: black;
         stroke-width: 1px;
+        opacity: 100%;
     }
 
     rect.alive {
-        fill: #31bf4d;
+        opacity: 20%;
     }
 </style>
 

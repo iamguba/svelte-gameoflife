@@ -1,6 +1,6 @@
-<script>
-    export let title = '';
-    export let disabled = false;
+<script lang="ts">
+    export let title: string;
+    export let disabled: boolean = false;
 </script>
 
 <style>
