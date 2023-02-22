@@ -19,8 +19,8 @@
     const alivePercentsCount = createAlivePercentsCount(board, aliveCount);
     const boardPlayer = createPlayer(board);
 
-    let importFiles: FileList | null = null;
-    let importInput: HTMLInputElement | null = null;
+    let importFiles: FileList;
+    let importInput: HTMLInputElement;
 
     onMount(() => {
         board.importFrom(JSON.stringify(gameOfLife));
@@ -47,7 +47,7 @@
     }
 
     function handleImportClick() {
-        importInput?.click();
+        importInput.click();
     }
 
     function readImport(importFile: File): Promise<string> {
@@ -75,7 +75,7 @@
                 const errorMessage = (<Error>e).message;
                 alert(`Error importing file: "${errorMessage}"`);
             })
-            .finally(() => (<HTMLInputElement>importInput).value = '')
+            .finally(() => importInput.value = '');
     }
 </script>
 
