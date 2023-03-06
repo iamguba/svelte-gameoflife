@@ -33,12 +33,12 @@ export function createBoard(rows: number, cols: number): BoardStore {
         return board;
     });
 
+    const nextGen = () => update((board) => getNextGen(board));
+
     const reset = () => set({
         grid: getEmptyGrid(rows, cols),
         steps: 0
     });
-
-    const nextGen = () => update((board) => getNextGen(board));
 
     const randomSeed = () => set({
         grid: getRandomSeedGrid(rows, cols),
@@ -156,25 +156,22 @@ function getNextGen(board: Board): Board {
     const newGrid = getEmptyGrid(rowsCount, colsCount);
 
     grid.forEach((rowCells, row) => {
-        rowCells.forEach((isAlive, column) => {
+        rowCells.forEach((prevState, column) => {
             const aliveNeighbours = countAliveNeighbours(grid, row, column);
+            const nextState = getNextCellState(prevState, aliveNeighbours);
 
-            switch (true) {
-                case (isAlive && aliveNeighbours < 2):
-                case (isAlive && aliveNeighbours > 3):
-                    newGrid[row][column] = DEAD;
-                    break;
-                
-                case (isAlive && (aliveNeighbours === 2 || aliveNeighbours === 3)):
-                case (!isAlive && aliveNeighbours === 3):
-                    newGrid[row][column] = ALIVE;
-                    break;
-
-                default: 
-                    newGrid[row][column] = DEAD;
-            }
+            newGrid[row][column] = nextState;
         });
     });
 
     return { grid: newGrid, steps: steps + 1 };
+}
+
+function getNextCellState(prevState: boolean, aliveNeighbours: number): boolean {
+    const isStayAlive = aliveNeighbours === 2 || aliveNeighbours === 3;
+    const isBorn = aliveNeighbours === 3;
+
+    const shouldBeAlive = prevState === ALIVE ? isStayAlive : isBorn;
+
+    return shouldBeAlive ? ALIVE : DEAD;
 }
