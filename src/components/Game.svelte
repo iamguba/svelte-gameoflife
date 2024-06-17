@@ -79,20 +79,25 @@
 	}
 </script>
 
-<CanvasBoard {...{ board, rows, cols, alivePercentsCount }} />
+<main>
+	<CanvasBoard {...{ board, rows, cols, alivePercentsCount }} />
 
-<section>
-	<GameButton title={playPauseTitle} disabled={isEmpty} on:click={handlePlayPause} />
-	<GameButton title="Next Step" disabled={isNotReadyForExport} on:click={board.nextGen} />
-	<GameButton title="Reset" disabled={isNotReadyForExport} on:click={board.reset} />
-	<GameButton title="Random" disabled={isPlaying} on:click={board.randomSeed} />
-	<GameButton title="Export" disabled={isNotReadyForExport} on:click={handleExport} />
-	<GameButton title="Import" disabled={isPlaying} on:click={handleImportClick} />
-</section>
+	<section>
+		<GameButton title={playPauseTitle} disabled={isEmpty} on:click={handlePlayPause} />
+		<GameButton title="Next Step" disabled={isNotReadyForExport} on:click={board.nextGen} />
+		<GameButton title="Reset" disabled={isNotReadyForExport} on:click={board.reset} />
+		<GameButton title="Random" disabled={isPlaying} on:click={board.randomSeed} />
+		<GameButton title="Export" disabled={isNotReadyForExport} on:click={handleExport} />
+		<GameButton title="Import" disabled={isPlaying} on:click={handleImportClick} />
+	</section>
+
+	<section>
+		<GameButton title="classic game of life" disabled={!$board.isDayNight} on:click={() => board.setIsDayNight(false)} />
+		<GameButton title="day night" disabled={$board.isDayNight} on:click={() => board.setIsDayNight(true)} />
+	</section>
+</main>
 
 <input type="file" accept="application/json" bind:files={importFiles} bind:this={importInput} />
-
-<div class="break" />
 
 <aside>
 	<p>Cells alive: {$aliveCount}</p>
@@ -101,10 +106,15 @@
 </aside>
 
 <style>
+	main {
+		width: 60%; /* Adjust width as needed */
+    margin: 0 auto;
+	}
+
 	section {
-		display: flex;
-		margin: auto;
-		padding-bottom: 1em;
+		width: 100%;
+		margin: 0 auto;
+		padding-bottom: 2em;
 	}
 
 	aside {
@@ -118,11 +128,6 @@
 
 	aside p:hover {
 		color: whitesmoke;
-	}
-
-	.break {
-		flex-basis: 100%;
-		height: 0;
 	}
 
 	input[type='file'] {

@@ -1,7 +1,7 @@
 import type { BoardStore } from './Board';
 import { writable, type Writable } from 'svelte/store';
 
-const DEFAULT_INTERVAL_MS = 1000 / 24;
+const DEFAULT_INTERVAL_MS = 1000 / 60;
 
 export type PlayerStore = {
 	subscribe: Writable<boolean>['subscribe'];

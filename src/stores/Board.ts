@@ -5,6 +5,7 @@ export type BoardGrid = Array<Array<boolean>>;
 export type Board = {
 	grid: BoardGrid;
 	steps: number;
+	isDayNight: boolean;
 };
 
 export type BoardStore = {
@@ -14,6 +15,7 @@ export type BoardStore = {
 	randomSeed: () => void;
 	reset: () => void;
 	nextGen: () => void;
+	setIsDayNight: (value: boolean) => void;
 };
 
 type ExportColumn = Array<number>;
@@ -23,9 +25,10 @@ export const DEAD = false;
 export const ALIVE = true;
 
 export function createBoard(rows: number, cols: number): BoardStore {
-	const { subscribe, set, update } = writable({
+	const { subscribe, update } = writable({
 		grid: getEmptyGrid(rows, cols),
-		steps: 0
+		steps: 0,
+		isDayNight: false
 	});
 
 	const toggle = (row: number, column: number) =>
@@ -34,24 +37,33 @@ export function createBoard(rows: number, cols: number): BoardStore {
 			return board;
 		});
 
+	const setIsDayNight = (value: boolean) =>
+		update((board) => {
+			board.isDayNight = value;
+			return board;
+		});
+
 	const nextGen = () => update((board) => getNextGen(board));
 
 	const reset = () =>
-		set({
-			grid: getEmptyGrid(rows, cols),
-			steps: 0
+		update((board) => {
+			board.grid = getEmptyGrid(rows, cols);
+			board.steps = 0;
+			return board;
 		});
 
 	const randomSeed = () =>
-		set({
-			grid: getRandomSeedGrid(rows, cols),
-			steps: 0
+		update((board) => {
+			board.grid = getRandomSeedGrid(rows, cols);
+			board.steps = 0;
+			return board;
 		});
 
 	const importFrom = (importData: string) =>
-		set({
-			grid: getImportedGrid(rows, cols, importData),
-			steps: 0
+		update((board) => {
+			board.grid = getImportedGrid(rows, cols, importData);
+			board.steps = 0;
+			return board;
 		});
 
 	return {
@@ -60,6 +72,7 @@ export function createBoard(rows: number, cols: number): BoardStore {
 		reset,
 		randomSeed,
 		nextGen,
+		setIsDayNight,
 		importFrom
 	};
 }
@@ -161,7 +174,7 @@ function countAliveNeighbours(grid: BoardGrid, row: number, column: number): num
 function getNextGen(board: Board): Board {
 	console.time('nextGen');
 
-	const { grid, steps } = board;
+	const { grid, steps, isDayNight } = board;
 	const [rowsCount, colsCount] = getGridSize(grid);
 
 	const newGrid = getEmptyGrid(rowsCount, colsCount);
@@ -169,7 +182,9 @@ function getNextGen(board: Board): Board {
 	grid.forEach((rowCells, row) => {
 		rowCells.forEach((prevState, column) => {
 			const aliveNeighbours = countAliveNeighbours(grid, row, column);
-			const nextState = getNextCellStateDayNight(prevState, aliveNeighbours);
+			const nextState = isDayNight
+				? getNextCellStateDayNight(prevState, aliveNeighbours)
+				: getNextCellState(prevState, aliveNeighbours);
 
 			newGrid[row][column] = nextState;
 		});
@@ -177,7 +192,7 @@ function getNextGen(board: Board): Board {
 
 	console.timeEnd('nextGen');
 
-	return { grid: newGrid, steps: steps + 1 };
+	return { grid: newGrid, steps: steps + 1, isDayNight };
 }
 
 function getNextCellState(prevState: boolean, aliveNeighbours: number): boolean {
